@@ -1,0 +1,4 @@
+pyodbc
+redis
+PyJWT
+pika

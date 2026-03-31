@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server
+    environment:
+      SA_PASSWORD: "Qies$12!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    command: redis-server --appendonly yes --requirepass redis123
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_container
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user_service:
+    build: ./user_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+      - redis
+
+  event_service:
+    build: ./event_service
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+      - redis
+
+  booking_service:
+    build: ./booking_service
+    ports:
+      - "8003:8000"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - event_service
+
+  notification_service:
+    build: ./notification_service
+    depends_on:
+      - rabbitmq
+
+  admin_panel:
+    build: ./admin_panel
+    ports:
+      - "3000:3000"
